@@ -40,8 +40,8 @@ class GitlabBot(Bot):
             del self.chats[chatid]
             self.reply(chatid, "\U0001F63F Ok, take it easy\nbye.")
             open('chats', 'w').write(json.dumps(self.chats))
-        else:
-            self.reply(chatid, "\U0001F612 I won't talk to you.")
+        # else:
+        #     self.reply(chatid, "\U0001F612 I won't talk to you.")
 
     def send_to_all(self, msg):
         for c in self.chats:
@@ -78,6 +78,13 @@ def webhook():
     return jsonify({'status': 'ok'})
 
 
+def getAssignees(data):
+    assignees = ''
+    for assignee in data.get('assignees', []):
+        assignees += assignee['name'] + ' '
+    return assignees
+
+
 def generatePushMsg(data):
     msg = '*{0} ({1}) - {2} new commits*\n'\
         .format(data['project']['name'], data['project']['default_branch'], data['total_commits_count'])
@@ -90,42 +97,62 @@ def generatePushMsg(data):
 
 
 def generateIssueMsg(data):
-    action = data['object_attributes']['action']
+    object_attributes = data['object_attributes']
+    action = object_attributes['action']
     if action == 'open':
-        assignees = ''
-        for assignee in data.get('assignees', []):
-            assignees += assignee['name'] + ' '
-        msg = '*{0}* new issue for *{1}*:\n'\
-            .format(data['project']['name'], assignees)
+        assignees = getAssignees(data)
+        msg = '*{0}* new issue for *{2}*:\n'\
+            .format(
+                data['project']['name'],
+                object_attributes['iid']
+                assignees
+            )
     elif action == 'reopen':
-        assignees = ''
-        for assignee in data.get('assignees', []):
-            assignees += assignee['name'] + ' '
-        msg = '*{0}* issue re-opened for *{1}*:\n'\
-            .format(data['project']['name'], assignees)
+        assignees = getAssignees(data)
+        msg = '*{0}* issue re-opened by *{1}* for *{2}*:\n'\
+            .format(
+                data['project']['name'],
+                data['user']['name']
+                assignees
+            )
     elif action == 'close':
         msg = '*{0}* issue closed by *{1}*:\n'\
-            .format(data['project']['name'], data['user']['name'])
+            .format(
+                data['project']['name'],
+                data['user']['name']
+            )
     elif action == 'update':
-        assignees = ''
-        for assignee in data.get('assignees', []):
-            assignees += assignee['name'] + ' '
-        msg = '*{0}* issue assigned to *{1}*:\n'\
-            .format(data['project']['name'], assignees)
+        msg = '*{0}* issue updated by *{1}*:\n'\
+            .format(
+                data['project']['name'],
+                data['user']['name']
+            )
 
     msg = msg + '[{0}]({1})'\
-        .format(data['object_attributes']['title'], data['object_attributes']['url'])
+        .format(object_attributes['title'], object_attributes['url'])
     return msg
 
 
 def generateCommentMsg(data):
-    ntype = data['object_attributes']['noteable_type']
+    object_attributes = data['object_attributes']
+    ntype = object_attributes['noteable_type']
     if ntype == 'Commit':
         msg = 'note to commit'
     elif ntype == 'MergeRequest':
         msg = 'note to MergeRequest'
     elif ntype == 'Issue':
-        msg = 'note to Issue'
+        issue = data['issue']
+        msg = 'New comment from *{0}*:\n{1}\n'\
+            .format(
+                data['user']['name'],
+                object_attributes["description"]
+            )
+            msg = msg + '\nIssue #{2} - [{0}]({1})'\
+                .format(
+                    issue['title'],
+                    object_attributes['url'],
+                    issue['iid']
+                )
     elif ntype == 'Snippet':
         msg = 'note on code snippet'
     return msg

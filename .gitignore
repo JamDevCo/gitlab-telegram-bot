@@ -1,0 +1,7 @@
+chats
+chats.json
+__pycache__
+
+venv/
+bin/
+lib/

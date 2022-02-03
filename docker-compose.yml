@@ -1,0 +1,14 @@
+version: '3.3'
+
+services:
+  gitlab_telegram:
+    build: .
+    image: ghcr.io/jamdevco/gitlab-telegram-bot:master
+    environment:
+      AUTHMSG: obhgQIMxutzlfVTE61OzBzmoY
+      TOKEN: 5123699832:AAH8eF7SvH1TJuBTicbjidJmRUVh0KyND2g
+    volumes:
+      - ./:/work/
+      # - ./chats:/work/chats:ro
+    ports:
+      - 18121:10111
