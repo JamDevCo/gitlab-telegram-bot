@@ -1,7 +1,14 @@
-chats
-chats.json
-__pycache__
 
+# python files
+__pycache__
 venv/
 bin/
 lib/
+
+
+# Bot files
+./authmsg
+./token
+./offset
+chats
+chats.json

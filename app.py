@@ -104,7 +104,7 @@ def generateIssueMsg(data):
         msg = '*{0}* new issue for *{2}*:\n'\
             .format(
                 data['project']['name'],
-                object_attributes['iid']
+                object_attributes['iid'],
                 assignees
             )
     elif action == 'reopen':
@@ -112,7 +112,7 @@ def generateIssueMsg(data):
         msg = '*{0}* issue re-opened by *{1}* for *{2}*:\n'\
             .format(
                 data['project']['name'],
-                data['user']['name']
+                data['user']['name'],
                 assignees
             )
     elif action == 'close':
@@ -147,12 +147,12 @@ def generateCommentMsg(data):
                 data['user']['name'],
                 object_attributes["description"]
             )
-            msg = msg + '\nIssue #{2} - [{0}]({1})'\
-                .format(
-                    issue['title'],
-                    object_attributes['url'],
-                    issue['iid']
-                )
+        msg = msg + '\nIssue #{2} - [{0}]({1})'\
+            .format(
+                issue['title'],
+                object_attributes['url'],
+                issue['iid']
+            )
     elif ntype == 'Snippet':
         msg = 'note on code snippet'
     return msg
